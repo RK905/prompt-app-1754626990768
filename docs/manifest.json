@@ -1,0 +1,58 @@
+{
+  "name": "SimpleTodo — Tasks & Reminders",
+  "short_name": "SimpleTodo",
+  "description": "A lightweight, offline-capable todo list app with categories, due dates, and quick reminders. Fast, simple, and focused on getting things done.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7fbff",
+  "theme_color": "#0d6efd",
+  "orientation": "portrait-primary",
+  "lang": "en-US",
+  "dir": "ltr",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'><rect width='192' height='192' rx='24' fill='%230d6efd'/><g stroke='%23fff' stroke-width='12' stroke-linecap='round' stroke-linejoin='round' fill='none'><path d='M40 88 L58 106 L88 66'/></g><g fill='%23fff'><rect x='72' y='36' width='70' height='14' rx='7'/><rect x='72' y='80' width='70' height='14' rx='7'/><rect x='72' y='124' width='70' height='14' rx='7'/></g></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 192 192'><rect width='192' height='192' rx='24' fill='%230d6efd'/><g stroke='%23fff' stroke-width='12' stroke-linecap='round' stroke-linejoin='round' fill='none'><path d='M40 88 L58 106 L88 66'/></g><g fill='%23fff'><rect x='72' y='36' width='70' height='14' rx='7'/><rect x='72' y='80' width='70' height='14' rx='7'/><rect x='72' y='124' width='70' height='14' rx='7'/></g></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Task",
+      "short_name": "New",
+      "description": "Create a new todo item quickly",
+      "url": "/?action=new",
+      "icons": [
+        {
+          "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'><rect width='192' height='192' rx='24' fill='%230d6efd'/><g stroke='%23fff' stroke-width='12' stroke-linecap='round' stroke-linejoin='round' fill='none'><path d='M40 88 L58 106 L88 66'/></g></svg>",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Today's Tasks",
+      "short_name": "Today",
+      "description": "Open tasks due today",
+      "url": "/?filter=today",
+      "icons": [
+        {
+          "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'><rect width='192' height='192' rx='24' fill='%230d6efd'/><g fill='%23fff'><rect x='72' y='36' width='70' height='14' rx='7'/><rect x='72' y='80' width='70' height='14' rx='7'/></g></svg>",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}
