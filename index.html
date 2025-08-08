@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Simple Todo — PWA Todo List</title>
+    <meta name="theme-color" content="#06b6d4" />
+    <link rel="manifest" href="manifest.json">
+    <link href="style.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-b from-gray-50 to-gray-100 text-gray-900 min-h-screen">
+    <div id="app" class="container mx-auto px-4 py-8">
+        <header class="max-w-3xl mx-auto mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-sky-600">Simple Todo</h1>
+                    <p class="text-sm text-gray-500">A lightweight progressive todo list — add, complete, edit, and stay productive offline.</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button id="installBtn" class="hidden inline-flex items-center px-3 py-1.5 rounded-md bg-sky-600 text-white text-sm hover:bg-sky-700 focus:outline-none" aria-hidden="true">
+                        Install
+                    </button>
+                    <button id="syncBtn" class="inline-flex items-center px-3 py-1.5 rounded-md bg-white border text-sm text-gray-700 hover:bg-gray-50 focus:outline-none" title="Sync (uses localStorage)">
+                        Sync
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-3xl mx-auto">
+            <section class="bg-white rounded-lg shadow p-6">
+                <form id="todoForm" class="flex gap-2" aria-label="Add todo">
+                    <label for="newTodo" class="sr-only">Add todo</label>
+                    <input id="newTodo" name="newTodo" type="text" placeholder="What would you like to do?" class="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300" />
+                    <button type="submit" class="px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700">Add</button>
+                </form>
+
+                <div class="mt-4 flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <span id="itemsLeft">0</span> items left
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button class="filter-btn text-sm px-2 py-1 rounded-md bg-sky-50 text-sky-600" data-filter="all">All</button>
+                        <button class="filter-btn text-sm px-2 py-1 rounded-md hover:bg-gray-100" data-filter="active">Active</button>
+                        <button class="filter-btn text-sm px-2 py-1 rounded-md hover:bg-gray-100" data-filter="completed">Completed</button>
+                    </div>
+                </div>
+
+                <ul id="todoList" class="mt-4 space-y-2" aria-live="polite">
+                    <!-- Todos will be injected here -->
+                </ul>
+
+                <div class="mt-4 flex items-center justify-between text-sm text-gray-500">
+                    <button id="clearCompleted" class="text-red-600 hover:underline">Clear completed</button>
+                    <span class="italic">Built as a PWA — works offline.</span>
+                </div>
+            </section>
+
+            <section class="mt-6 max-w-3xl mx-auto text-center text-xs text-gray-400">
+                Tip: Press Enter to add a todo. Double-click an item to edit it.
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+
+    <script>
+    // Simple Todo App (inline) — persists to localStorage and registers service worker
+    (function () {
+        const STORAGE_KEY = 'simple-todo-list-v1';
+        const todoForm = document.getElementById('todoForm');
+        const newTodoInput = document.getElementById('newTodo');
+        const todoList = document.getElementById('todoList');
+        const itemsLeft = document.getElementById('itemsLeft');
+        const filterButtons = Array.from(document.querySelectorAll('.filter-btn'));
+        const clearCompletedBtn = document.getElementById('clearCompleted');
+        const installBtn = document.getElementById('installBtn');
+        const syncBtn = document.getElementById('syncBtn');
+
+        let todos = [];
+        let filter = 'all';
+        let deferredPrompt = null;
+
+        // Utilities
+        function uid() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        }
+
+        function save() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+        }
+
+        function load() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                todos = raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                todos = [];
+            }
+        }
+
+        // Rendering
+        function render() {
+            todoList.innerHTML = '';
+            const visible = todos.filter(t => {
+                if (filter === 'all') return true;
+                if (filter === 'active') return !t.completed;
+                if (filter === 'completed') return t.completed;
+            });
+
+            if (visible.length === 0) {
+                const empty = document.createElement('li');
+                empty.className = 'text-center text-gray-400 py-6';
+                empty.textContent = 'No todos yet — add something to get started.';
+                todoList.appendChild(empty);
+            } else {
+                visible.forEach(todo => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center justify-between p-2 border rounded-md';
+                    if (todo.completed) li.classList.add('opacity-70');
+
+                    const left = document.createElement('div');
+                    left.className = 'flex items-center gap-3';
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = todo.completed;
+                    checkbox.className = 'w-4 h-4';
+                    checkbox.setAttribute('aria-label', 'Mark todo complete');
+                    checkbox.addEventListener('change', () => {
+                        todo.completed = checkbox.checked;
+                        save();
+                        updateCounts();
+                        render();
+                    });
+
+                    const text = document.createElement('span');
+                    text.className = 'select-none';
+                    text.textContent = todo.text;
+                    if (todo.completed) {
+                        text.classList.add('line-through', 'text-gray-500');
+                    } else {
+                        text.classList.add('text-gray-800');
+                    }
+                    text.style.cursor = 'pointer';
+                    text.title = 'Double-click to edit';
+
+                    // Double click to edit
+                    text.addEventListener('dblclick', () => {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.value = todo.text;
+                        input.className = 'px-2 py-1 border rounded w-full';
+                        input.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') {
+                                finishEdit();
+                            } else if (e.key === 'Escape') {
+                                render();
+                            }
+                        });
+                        input.addEventListener('blur', finishEdit);
+                        left.replaceChild(input, text);
+                        input.focus();
+
+                        function finishEdit() {
+                            const val = input.value.trim();
+                            if (val) {
+                                todo.text = val;
+                                save();
+                            } else {
+                                // If cleared, remove todo
+                                todos = todos.filter(t => t.id !== todo.id);
+                                save();
+                            }
+                            render();
+                            updateCounts();
+                        }
+                    });
+
+                    left.appendChild(checkbox);
+                    left.appendChild(text);
+
+                    const actions = document.createElement('div');
+                    actions.className = 'flex items-center gap-2';
+
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'text-sm px-2 py-1 rounded bg-gray-50 hover:bg-gray-100 text-gray-700';
+                    editBtn.textContent = 'Edit';
+                    editBtn.addEventListener('click', () => {
+                        const newText = prompt('Edit todo', todo.text);
+                        if (newText !== null) {
+                            const trimmed = newText.trim();
+                            if (trimmed) {
+                                todo.text = trimmed;
+                                save();
+                                render();
+                            }
+                        }
+                    });
+
+                    const delBtn = document.createElement('button');
+                    delBtn.className = 'text-sm px-2 py-1 rounded bg-red-50 hover:bg-red-100 text-red-600';
+                    delBtn.textContent = 'Delete';
+                    delBtn.addEventListener('click', () => {
+                        if (confirm('Delete this todo?')) {
+                            todos = todos.filter(t => t.id !== todo.id);
+                            save();
+                            render();
+                            updateCounts();
+                        }
+                    });
+
+                    actions.appendChild(editBtn);
+                    actions.appendChild(delBtn);
+
+                    li.appendChild(left);
+                    li.appendChild(actions);
+
+                    todoList.appendChild(li);
+                });
+            }
+
+            updateCounts();
+            updateFilterButtons();
+        }
+
+        function updateCounts() {
+            const left = todos.filter(t => !t.completed).length;
+            itemsLeft.textContent = left;
+        }
+
+        function updateFilterButtons() {
+            filterButtons.forEach(btn => {
+                if (btn.dataset.filter === filter) {
+                    btn.classList.add('bg-sky-600', 'text-white');
+                    btn.classList.remove('hover:bg-gray-100');
+                } else {
+                    btn.classList.remove('bg-sky-600', 'text-white');
+                }
+            });
+        }
+
+        // Events
+        todoForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const text = newTodoInput.value.trim();
+            if (!text) return;
+            todos.unshift({ id: uid(), text, completed: false, createdAt: Date.now() });
+            newTodoInput.value = '';
+            save();
+            render();
+        });
+
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filter = btn.dataset.filter;
+                render();
+            });
+        });
+
+        clearCompletedBtn.addEventListener('click', () => {
+            const any = todos.some(t => t.completed);
+            if (!any) return;
+            if (confirm('Clear all completed todos?')) {
+                todos = todos.filter(t => !t.completed);
+                save();
+                render();
+            }
+        });
+
+        syncBtn.addEventListener('click', () => {
+            // For demo, "sync" just reloads from localStorage to simulate sync
+            load();
+            render();
+            alert('Synced with local storage.');
+        });
+
+        // Install prompt handling
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.classList.remove('hidden');
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const result = await deferredPrompt.userChoice;
+            // Optionally handle result.outcome
+            deferredPrompt = null;
+            installBtn.classList.add('hidden');
+        });
+
+        // Service worker registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(() => {
+                    // Registered
+                }).catch(() => {
+                    // SW registration failed
+                });
+            });
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                newTodoInput.focus();
+            }
+        });
+
+        // Initial load
+        load();
+        render();
+    })();
+    </script>
+</body>
+</html>

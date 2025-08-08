@@ -1,0 +1,357 @@
+/* Custom styles for your PWA - "Simple Todo List App" */
+/* Tailwind CSS is loaded via CDN, so utility classes are used and @apply is used where helpful */
+
+/* Color variables for easy theming */
+:root {
+    --bg: #f7fafc;           /* light background */
+    --card: #ffffff;         /* card background */
+    --muted: #6b7280;        /* muted text */
+    --primary: #2563eb;      /* blue-600 */
+    --primary-600: #1e40af;  /* blue-800 */
+    --accent: #10b981;       /* green-500 */
+    --danger: #ef4444;       /* red-500 */
+    --glass: rgba(255,255,255,0.6);
+    --shadow: 0 6px 18px rgba(16,24,40,0.06);
+}
+
+/* Dark theme overrides */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #0b1220;
+        --card: #0f1724;
+        --muted: #9ca3af;
+        --primary: #60a5fa;
+        --primary-600: #3b82f6;
+        --accent: #34d399;
+        --danger: #f87171;
+        --glass: rgba(255,255,255,0.04);
+        --shadow: 0 6px 18px rgba(2,6,23,0.6);
+    }
+}
+
+/* Base layout */
+body {
+    background: linear-gradient(180deg, rgba(255,255,255,0.6), transparent), var(--bg);
+    min-height: 100vh;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    color: #0f1724;
+    margin: 0;
+    padding: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+    body { color: #e6eef8; }
+}
+
+/* App shell */
+.app-shell {
+    @apply max-w-2xl mx-auto my-8;
+    padding: 1.25rem;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4), var(--card));
+    backdrop-filter: blur(6px);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(0,0,0,0.03);
+}
+
+.header {
+    @apply flex items-center justify-between gap-4 mb-4;
+}
+.brand {
+    @apply flex items-center gap-3;
+}
+.logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 6px 14px rgba(37,99,235,0.18);
+}
+.title {
+    @apply text-lg font-semibold;
+}
+
+/* Subheader/summary */
+.summary {
+    @apply flex items-center gap-3 text-sm text-gray-600;
+    color: var(--muted);
+}
+
+/* Input area */
+.input-row {
+    @apply flex items-center gap-3 mb-4;
+}
+.todo-input {
+    @apply flex-1 bg-white/80 dark:bg-black/20 rounded-lg px-4 py-3 shadow-sm placeholder-gray-400;
+    border: 1px solid rgba(15,23,36,0.04);
+    transition: box-shadow .18s ease, border-color .18s ease, transform .12s ease;
+}
+@media (prefers-color-scheme: dark) {
+    .todo-input { border: 1px solid rgba(255,255,255,0.03); }
+}
+.todo-input:focus {
+    outline: none;
+    border-color: rgba(37,99,235,0.9);
+    box-shadow: 0 6px 20px rgba(37,99,235,0.08);
+    transform: translateY(-1px);
+}
+
+/* Buttons */
+.btn-primary {
+    @apply bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+    box-shadow: 0 6px 14px rgba(37,99,235,0.12);
+}
+.btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+}
+
+/* Floating add button for mobile */
+.floating-add {
+    position: fixed;
+    right: 18px;
+    bottom: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 8px 30px rgba(37,99,235,0.16);
+    z-index: 60;
+    transition: transform .16s ease, box-shadow .16s ease;
+}
+.floating-add:active { transform: translateY(2px); }
+@media (min-width: 769px) {
+    .floating-add { display: none; }
+}
+
+/* Todo list area */
+.todo-list {
+    @apply bg-transparent rounded-lg;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.todo-item {
+    @apply bg-white/90 dark:bg-black/10 rounded-xl px-4 py-3 mb-3 flex items-start gap-3;
+    border: 1px solid rgba(0,0,0,0.03);
+    transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+    align-items: center;
+}
+.todo-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(2,6,23,0.06);
+}
+@media (prefers-color-scheme: dark) {
+    .todo-item { border: 1px solid rgba(255,255,255,0.02); }
+}
+
+/* Checkbox / completion toggle */
+.todo-checkbox {
+    @apply flex items-center justify-center w-10 h-10 rounded-md border transition-colors duration-150 cursor-pointer;
+    border: 1px solid rgba(15,23,36,0.06);
+    background: linear-gradient(180deg, rgba(255,255,255,0.7), transparent);
+}
+@media (prefers-color-scheme: dark) {
+    .todo-checkbox { border: 1px solid rgba(255,255,255,0.03); }
+}
+.todo-checkbox.checked {
+    background: linear-gradient(135deg, var(--accent), var(--primary));
+    color: white;
+    border: none;
+    box-shadow: 0 8px 20px rgba(16,185,129,0.12), inset 0 -6px 18px rgba(0,0,0,0.08);
+}
+.check-icon {
+    font-size: 1.1rem;
+    transform: scale(.98);
+    transition: transform .18s cubic-bezier(.2,.9,.34,1);
+}
+.todo-checkbox.checked .check-icon {
+    transform: scale(1.04) rotate(-8deg);
+}
+
+/* Text and metadata */
+.todo-content {
+    @apply flex-1 min-w-0;
+}
+.todo-text {
+    @apply text-sm font-medium leading-5;
+    color: #0f1724;
+    transition: color .12s ease, opacity .12s ease, text-decoration .12s ease;
+}
+@media (prefers-color-scheme: dark) { .todo-text { color: #e6eef8; } }
+.todo-meta {
+    @apply text-xs text-gray-500 mt-1;
+    color: var(--muted);
+}
+
+/* Completed state */
+.todo-item.completed {
+    opacity: 0.9;
+}
+.todo-item.completed .todo-text {
+    text-decoration: line-through;
+    color: rgba(15,23,36,0.38);
+    opacity: 0.8;
+}
+@media (prefers-color-scheme: dark) {
+    .todo-item.completed .todo-text { color: rgba(230,238,248,0.35); }
+}
+
+/* Actions (edit, delete) */
+.todo-actions {
+    @apply flex items-center gap-2 ml-3;
+}
+.icon-btn {
+    @apply inline-flex items-center justify-center w-9 h-9 rounded-md hover:bg-gray-100 transition-colors duration-150;
+    color: var(--muted);
+}
+.icon-btn:focus { outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+.icon-btn.danger { color: var(--danger); }
+
+/* Drag handle for reordering */
+.drag-handle {
+    @apply cursor-grab text-gray-400 p-1 rounded-md hover:bg-gray-100;
+    color: #9ca3af;
+}
+.drag-handle:active { cursor: grabbing; }
+
+/* Empty state */
+.empty-state {
+    @apply text-center py-12 px-4 rounded-lg;
+    color: var(--muted);
+    background: linear-gradient(180deg, transparent, rgba(0,0,0,0.01));
+    border: 1px dashed rgba(0,0,0,0.03);
+}
+.empty-illustration {
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 12px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(37,99,235,0.12), rgba(16,185,129,0.08));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+}
+
+/* Filters / footer */
+.filters {
+    @apply flex items-center gap-2 mt-4 text-sm;
+}
+.filter-btn {
+    @apply px-3 py-1 rounded-md text-sm;
+    background: transparent;
+    color: var(--muted);
+}
+.filter-btn.active {
+    background: rgba(37,99,235,0.08);
+    color: var(--primary-600);
+}
+
+/* Badge styles for counts and priorities */
+.badge {
+    @apply inline-flex items-center gap-2 px-2 py-1 rounded-md text-xs;
+    background: rgba(2,6,23,0.04);
+    color: var(--muted);
+}
+.priority-high { background: rgba(239,68,68,0.08); color: var(--danger); }
+.priority-medium { background: rgba(234,179,8,0.06); color: #b45309; }
+.priority-low { background: rgba(16,185,129,0.06); color: var(--accent); }
+
+/* Offline / toast banner */
+.offline-banner {
+    @apply fixed left-1/2 -translate-x-1/2 bottom-6 px-4 py-2 rounded-full text-sm;
+    background: linear-gradient(90deg, rgba(244,63,94,0.08), rgba(255,255,255,0.02));
+    color: var(--muted);
+    box-shadow: 0 8px 30px rgba(2,6,23,0.06);
+    z-index: 70;
+}
+
+/* Simple "installed" / PWA splash card */
+.pwa-splash {
+    @apply fixed inset-0 flex items-center justify-center pointer-events-none;
+    z-index: 80;
+}
+.pwa-toast {
+    @apply bg-white/95 dark:bg-black/80 px-4 py-3 rounded-xl shadow-md;
+    border: 1px solid rgba(0,0,0,0.04);
+}
+
+/* Small utilities */
+.sr-only {
+    position: absolute !important;
+    height: 1px; width: 1px;
+    overflow: hidden; clip: rect(1px,1px,1px,1px);
+    white-space: nowrap;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* List animations for add/delete */
+@keyframes itemAdd {
+    from { opacity: 0; transform: translateY(12px) scale(.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.todo-item.added {
+    animation: itemAdd 280ms cubic-bezier(.2,.9,.34,1);
+}
+@keyframes itemRemove {
+    from { opacity: 1; transform: scale(1); height: auto; margin-bottom: .75rem; }
+    to { opacity: 0; transform: scale(.98); height: 0; margin-bottom: 0; }
+}
+.todo-item.removing {
+    animation: itemRemove 220ms ease forwards;
+}
+
+/* Focus and accessibility focus rings for interactive elements */
+button:focus, .todo-checkbox:focus, .todo-input:focus {
+    box-shadow: 0 0 0 4px rgba(37,99,235,0.08);
+}
+
+/* Nice scrollbar for desktop */
+::-webkit-scrollbar {
+    height: 8px; width: 8px;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(15,23,36,0.06);
+    border-radius: 8px;
+}
+@media (prefers-color-scheme: dark) {
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.04); }
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+    .app-shell {
+        margin: 1.25rem;
+        padding: 1rem;
+        border-radius: 12px;
+    }
+    .header .title { font-size: 1rem; }
+    .summary { font-size: 12px; }
+    .todo-item { padding: 0.75rem; }
+}
+
+/* Keep existing mobile-first responsive container rule */
+@media (max-width: 768px) {
+    .container {
+        @apply px-4;
+    }
+}
